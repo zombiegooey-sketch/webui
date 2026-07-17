@@ -4,11 +4,15 @@ export async function POST(req: Request) {
   try {
     const { model, messages } = await req.json();
 
-    // Chuyển tiếp request từ Frontend sang cổng chạy Ollama cục bộ
-    const response = await fetch('http://127.0.0.1:11434/api/chat', {
+    // 1. Tự động lấy link Ngrok từ Vercel Env, nếu không có (chạy local) thì tự fallback về localhost
+    const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
+
+    // 2. Gọi API đến Ollama (qua Ngrok hoặc Local tùy môi trường)
+    const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true', // Dòng chí mạng để Ngrok không chặn request của Vercel
       },
       body: JSON.stringify({
         model: model,
