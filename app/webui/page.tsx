@@ -72,18 +72,23 @@ export default function AIWorkspace() {
 
   // 4. KIỂM TRA ĐƯỜNG TRUYỀN OLLAMA THỰC TẾ
   useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        const res = await fetch("http://localhost:11434/", { method: "GET" }).catch(() => null);
-        setIsOllamaConnected(res ? res.status === 200 : false);
-      } catch {
+  const checkConnection = async () => {
+    try {
+      const res = await fetch("/api/health").catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json();
+        setIsOllamaConnected(data.connected);
+      } else {
         setIsOllamaConnected(false);
       }
-    };
-    checkConnection();
-    const interval = setInterval(checkConnection, 10000); // Check lại mỗi 10 giây
-    return () => clearInterval(interval);
-  }, []);
+    } catch {
+      setIsOllamaConnected(false);
+    }
+  };
+  checkConnection();
+  const interval = setInterval(checkConnection, 10000); // Check lại mỗi 10 giây
+  return () => clearInterval(interval);
+}, []);
 
   // 5. GỬI TIN NHẮN THỰC TẾ (Gọi API Route kết nối Ollama)
   const handleSendMessage = async (e: React.FormEvent) => {
